@@ -15,7 +15,7 @@
 			ramdomNumber: 0
 		}),
 		created() {
-			this.ramdomNumber = Math.floor(Math.random() * 100) + 1;
+			this.ramdomNumber = Math.floor(Math.random() * (10000 - 100) + 100) / 100;
 		},
 		methods: {
 
