@@ -1,10 +1,13 @@
 import './bootstrap';
 
 import { createApp } from 'vue';
+const app = createApp({});
+
 import assets from './mixins/assets.js';
 import ItemComponent from "./components/ItemComponent.vue";
+import AppComponent from "./components/AppComponent";
 
-const app = createApp({});
 app.mixin(assets);
 app.component('ItemComponent', ItemComponent);
+app.component('AppComponent', AppComponent)
 app.mount('#app');
