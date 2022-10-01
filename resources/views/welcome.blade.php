@@ -19,25 +19,11 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-3 mb-3">
                             <item-component></item-component>
                         </div>
-                        <div class="col-md-9">
-                            <div class="form-group" id="toggler">
-                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                    @foreach ($data = ['card', 'bitcoin'] as $paymentPlatform)
-                                        <label class="btn btn-outline-secondary rounded m-2 p-1" data-bs-target="#{{ $paymentPlatform }}Collapse" data-bs-toggle="collapse">
-                                            <input type="radio" name="payment_platform" value="{{ $paymentPlatform }}" required>
-                                            {{ $paymentPlatform }}
-                                        </label>
-                                    @endforeach
-                                </div>
-                                @foreach ($data = ['card', 'bitcoin'] as $paymentPlatform)
-                                    <div id="{{ $paymentPlatform }}Collapse" class="collapse" data-bs-parent="#toggler">
-                                        @includeIf('components.' . strtolower($paymentPlatform) . '-collapse')
-                                    </div>
-                                @endforeach
-                            </div>
+                        <div class="col-md-9 mb-3">
+                            <app-component></app-component>
                         </div>
                     </div>
                 </div>
