@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class WompiService {
 
@@ -21,8 +21,8 @@ class WompiService {
 		$this->token = '';
 	}
 
-	public function handlePayment(Request $request) {
-		$request->validate([
+	public function handlePaymentCard($data) {
+		$rules = [
 			'numeroTarjeta' => 'required',
 			'cvv' => 'required',
 			'mesVencimiento' => 'required',
@@ -30,25 +30,64 @@ class WompiService {
 			'monto' => 'required',
 			'emailCliente' => 'required',
 			'nombreCliente' => 'required'
-		]);
+		];
 
-		$this->getToken();
+		$validator = Validator::make($data, $rules);
 
-		$payment = $this->createPayment(
-			$request->numeroTarjeta,
-			$request->cvv,
-			$request->mesVencimiento,
-			$request->anioVencimiento,
-			$request->monto,
-			$request->emailCliente,
-			$request->nombreCliente
-		);
+		if ($validator->passes()){
 
-		if ($payment->esAprobada === true) {
-			return redirect()->back()->withSuccess('¡Pago realizado con exito!');
+			$this->getToken();
+
+			$payment = $this->createCardPayment(
+				$data['numeroTarjeta'],
+				$data['cvv'],
+				$data['mesVencimiento'],
+				$data['anioVencimiento'],
+				$data['monto'],
+				$data['emailCliente'],
+				$data['nombreCliente']
+			);
+
+			return $payment;
 		}
 
-		return redirect()->back()->withErrors('Lo sentimos, ocurrio un error');
+		return $response = 'Lo sentimos, ocurrio un error';
+	}
+
+	public function handlePaymentBitcoin($data){
+
+		$rules = [
+			'monto' => "required",
+			'emailCliente' => "required",
+			'nombreClienteBTC' => "required",
+			'apellidoCliente'=> "required",
+			'direccionCliente' => "required",
+			'documentoIdentidadCliente' => "required",
+			'idRegion' => "required",
+			'idTerritorio' => "required"
+		];
+
+		$validator = Validator::make($data, $rules);
+
+		if ($validator->passes()) {
+
+			$this->getToken();
+
+			$response = $this->createbitcoinPayment(
+				$data['monto'],
+				$data['emailCliente'],
+				$data['nombreClienteBTC'],
+				$data['apellidoCliente'],
+				$data['direccionCliente'],
+				$data['documentoIdentidadCliente'],
+				$data['idRegion'],
+				$data['idTerritorio']
+			);
+
+			return $response;
+		}
+
+		return $response = 'Lo sentimos, ocurrio un error';
 	}
 
 	public function getToken(): void
@@ -73,7 +112,7 @@ class WompiService {
 		$this->token = $response->access_token;
 	}
 
-	public function createPayment($numeroTarjeta, $cvv, $mesVencimiento, $anioVencimiento, $monto, $emailCliente, $nombreCliente) {
+	public function createCardPayment($numeroTarjeta, $cvv, $mesVencimiento, $anioVencimiento, $monto, $emailCliente, $nombreCliente) {
 
 		$data = [
 			"tarjetaCreditoDebido" => [
@@ -103,6 +142,35 @@ class WompiService {
 
 		return $this->decodeResponse($response);
 
+	}
+
+	public function createbitcoinPayment($monto, $emailCliente, $nombreClienteBTC, $apellidoCliente, $direccionCliente, $documentoIdentidadCliente, $idRegion, $idTerritorio ){
+		$data = [
+			"monto" => $monto,
+			"emailCliente" 	=> $emailCliente,
+			"nombreCliente" => $nombreClienteBTC,
+			"apellidoCliente"	=> $apellidoCliente,
+			"direccionCliente"	=> $direccionCliente,
+			"documentoIdentidadCliente"	=> $documentoIdentidadCliente,
+			"idRegion"	=> $idRegion,
+			"idTerritorio" => $idTerritorio
+		];
+
+		$client = new Client([
+			'base_uri' => $this->baseUri,
+		]);
+
+		$response = $client->request('POST', '/TransaccionCompra/Bitcoin', [
+			'headers' => [
+				'authorization' => "Bearer $this->token",
+				'content-type' => 'application/json'
+			],
+			'body' => json_encode($data),
+		]);
+
+		$response = $response->getBody()->getContents();
+
+		return $this->decodeResponse($response);
 	}
 
 	public function decodeResponse($response) {

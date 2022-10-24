@@ -13,13 +13,22 @@ class PaymentController extends Controller
 			'monto' => ['required', 'numeric', 'min:5'],
 		];
 
-		dd($request->all());
-
 		$request->validate($rules);
+
+		$data = $request->input('data');
+		$data['monto'] = $request->input('monto');
 
 		$wompi = new WompiService();
 
-		return $wompi->handlePayment($request);
+		if ($data['payMethod'] == 'card'){
+			$response = $wompi->handlePaymentCard($data);
+		} else {
+			$response = $wompi->handlePaymentBitcoin($data);
+		}
+
+		return response()->json($response);
+
+
 	}
 
 }
