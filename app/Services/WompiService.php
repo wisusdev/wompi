@@ -121,7 +121,7 @@ class WompiService {
 				"mesVencimiento" => intval($mesVencimiento),
 				"anioVencimiento" => intval($anioVencimiento)
 			],
-			"monto" => intval($monto),
+			"monto" => floatval($monto),
 			"emailCliente" => $emailCliente,
 			"nombreCliente" => $nombreCliente
 		];
